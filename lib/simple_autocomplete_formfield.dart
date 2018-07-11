@@ -4,16 +4,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show TextInputFormatter;
 
-typedef Future<List<T>> Suggestions<T>(String search);
-typedef Widget ItemBuilder<T>(BuildContext context, T item);
 typedef Widget ContainerBuilder(BuildContext context, List<Widget> items);
 
-typedef String ItemToString<T>(T item);
-typedef T ItemFromString<T>(String string);
-
 class ItemParser<T> {
-  final ItemToString itemToString;
-  final ItemFromString itemFromString;
+  final String Function(T item) itemToString;
+  final T Function(String string) itemFromString;
   ItemParser({@required this.itemFromString, @required this.itemToString});
 }
 
@@ -22,9 +17,9 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
   final int minSearchLength;
   final int maxSuggestions;
   final ContainerBuilder containerBuilder;
-  final ItemBuilder<T> itemBuilder;
+  final Widget Function(BuildContext context, T item) itemBuilder;
   final ItemParser<T> itemParser;
-  final Suggestions<T> onSearch;
+  final Future<List<T>> Function(String search) onSearch;
   final ValueChanged<T> onChanged;
   final IconData resetIcon;
   // TextFormField properties
