@@ -6,22 +6,59 @@ import 'package:flutter/services.dart' show TextInputFormatter;
 
 typedef Widget ContainerBuilder(BuildContext context, List<Widget> items);
 
+/// Parses between the autocomplete data type and its string representation.
 class ItemParser<T> {
   final String Function(T item) itemToString;
   final T Function(String string) itemFromString;
   ItemParser({@required this.itemFromString, @required this.itemToString});
 }
 
+/// Wraps a [TextFormField] and shows a list of suggestions below it.
+///
+/// As the user types, a list of suggestions is shown using [onSearch] and
+/// [itemBuilder]. The default suggestions container has a height of 200 and
+/// scrolls, but can be changed via [containerBuilder].
 class SimpleAutocompleteFormField<T> extends FormField<T> {
   final Key key;
+
+  /// Minimum search length that shows suggestions. Defaults to 1.
   final int minSearchLength;
+
+  /// Maximum number of suggestions shown. Defaults to 3.
   final int maxSuggestions;
+
+  /// Container for the list of suggestions. Defaults to
+  ///
+  /// ```
+  /// (context, items) => Container(
+  ///   height: 200.0,
+  ///   child: SingleChildScrollView(
+  ///     child: Column(
+  ///       crossAxisAlignment: CrossAxisAlignment.stretch,
+  ///       children: items,
+  ///     ),
+  ///   ),
+  /// )
+  /// ```
   final ContainerBuilder containerBuilder;
+
+  /// Represents an autocomplete suggestion.
   final Widget Function(BuildContext context, T item) itemBuilder;
+
+  /// An optional way of interchanging type [T] to and from a string.
+  /// If not specified [T.toString()] is used and `null` for parsing from string.
   final ItemParser<T> itemParser;
+
+  /// Called to fill the autocomplete list's data.
   final Future<List<T>> Function(String search) onSearch;
+
+  /// Called when an item is tapped or the field loses focus.
   final ValueChanged<T> onChanged;
+
+  /// If not null, the TextField [decoration]'s suffixIcon will be
+  /// overridden to reset the input using the icon defined here.
   final IconData resetIcon;
+
   // TextFormField properties
   final FormFieldValidator<T> validator;
   final FormFieldSetter<T> onSaved;
@@ -51,9 +88,6 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
       ContainerBuilder containerBuilder,
       this.itemParser,
       this.onChanged,
-
-      /// If not null, the TextField [decoration]'s suffixIcon will be
-      /// overridden to reset the input using the icon defined here.
       this.resetIcon: Icons.close,
       Builder itemContainerBuilder,
       bool autovalidate: false,
