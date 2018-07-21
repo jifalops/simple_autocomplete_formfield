@@ -1,6 +1,6 @@
 name: simple_autocomplete_formfield
 description: A Flutter widget that wraps a TextFormField and assists with autocomplete functionality.
-version: 0.1.0
+version: 0.1.1
 author: Jacob Phillips <jifalops@gmail.com>
 homepage: https://github.com/jifalops/simple_autocomplete_formfield
 
