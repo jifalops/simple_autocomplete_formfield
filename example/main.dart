@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../lib/simple_autocomplete_formfield.dart';
+import 'package:simple_autocomplete_formfield/simple_autocomplete_formfield.dart';
 
 class MyHomePageState extends State<MyHomePage> {
   @override
