@@ -1,3 +1,7 @@
+## [0.1.2] - August 14, 2018
+
+* Fix missing generic type specifier in itemParser usage.
+
 ## [0.1.1] - July 21, 2018
 
 * Fix and improve documentation.

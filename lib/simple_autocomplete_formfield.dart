@@ -267,8 +267,8 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
   }
 }
 
-String _toString<T>(T value, ItemParser parser) =>
+String _toString<T>(T value, ItemParser<T> parser) =>
     parser?.itemToString(value) ?? value?.toString() ?? '';
 
-T _toObject<T>(String string, ItemParser parser) =>
+T _toObject<T>(String string, ItemParser<T> parser) =>
     parser?.itemFromString(string) ?? null;
