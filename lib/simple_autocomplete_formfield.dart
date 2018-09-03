@@ -4,50 +4,53 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show TextInputFormatter;
 
-typedef Widget ContainerBuilder(BuildContext context, List<Widget> items);
-
-/// Parses between the autocomplete data type and its string representation.
-class ItemParser<T> {
-  final String Function(T item) itemToString;
-  final T Function(String string) itemFromString;
-  ItemParser({@required this.itemFromString, @required this.itemToString});
-}
+typedef Widget SuggestionsBuilder(BuildContext context, List<Widget> items);
+typedef String ItemToString<T>(T item);
+typedef T ItemFromString<T>(String string);
 
 /// Wraps a [TextFormField] and shows a list of suggestions below it.
 ///
 /// As the user types, a list of suggestions is shown using [onSearch] and
-/// [itemBuilder]. The default suggestions container has a height of 200 and
-/// scrolls, but can be changed via [containerBuilder].
+/// [itemBuilder]. The default suggestions container has a fills the available
+/// height but can be overridden by using [suggestionsHeight] or by using a
+/// custom [suggestionsBuilder].
+///
+/// It is recommended to provide an [itemFromString] argument so that a
+/// suggestion can be selected if the user types in the value instead of tapping
+/// on it.
+///
+/// It is also recommended that the Widget tree containing a
+/// SimpleAutocompleteFormField include a [ListView] or other scrolling
+/// container such as a [SingleChildScrollView]. This prevents the suggestions
+/// from overflowing other UI elements like the keyboard.
 class SimpleAutocompleteFormField<T> extends FormField<T> {
   final Key key;
 
-  /// Minimum search length that shows suggestions. Defaults to 1.
+  /// Minimum search length that shows suggestions.
   final int minSearchLength;
 
-  /// Maximum number of suggestions shown. Defaults to 3.
+  /// Maximum number of suggestions shown.
   final int maxSuggestions;
 
-  /// Container for the list of suggestions. Defaults to
-  ///
-  /// ```
-  /// (context, items) => Container(
-  ///   height: 200.0,
-  ///   child: SingleChildScrollView(
-  ///     child: Column(
-  ///       crossAxisAlignment: CrossAxisAlignment.stretch,
-  ///       children: items,
-  ///     ),
-  ///   ),
-  /// )
-  /// ```
-  final ContainerBuilder containerBuilder;
+  /// Container for the list of suggestions. Defaults to a scrollable `Column`
+  /// that fills the available space.
+  final SuggestionsBuilder suggestionsBuilder;
+
+  /// The height of the suggestions container. Has no effect if a custom
+  ///  [suggestionsBuilder] is specified.
+  final double suggestionsHeight;
 
   /// Represents an autocomplete suggestion.
   final Widget Function(BuildContext context, T item) itemBuilder;
 
-  /// An optional way of interchanging type [T] to and from a string.
-  /// If not specified [T.toString()] is used and `null` for parsing from string.
-  final ItemParser<T> itemParser;
+  /// How the text field is filled in when an item is selected. If omitted, the
+  /// item's `toString()` method is used.
+  final ItemToString<T> itemToString;
+
+  /// Called before `onChanged` when the input loses focus and a suggestion was
+  /// not selected, for example if the user typed in an entire suggestion value
+  /// without tapping on it. The default implementation simply returns `null`.
+  final ItemFromString<T> itemFromString;
 
   /// Called to fill the autocomplete list's data.
   final Future<List<T>> Function(String search) onSearch;
@@ -81,15 +84,16 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
 
   SimpleAutocompleteFormField(
       {this.key,
-      this.minSearchLength: 1,
+      this.minSearchLength: 0,
       this.maxSuggestions: 3,
       @required this.itemBuilder,
       @required this.onSearch,
-      ContainerBuilder containerBuilder,
-      this.itemParser,
+      SuggestionsBuilder suggestionsBuilder,
+      this.suggestionsHeight,
+      this.itemToString,
+      this.itemFromString,
       this.onChanged,
       this.resetIcon: Icons.close,
-      Builder itemContainerBuilder,
       bool autovalidate: false,
       this.validator,
       this.onFieldSubmitted,
@@ -112,18 +116,11 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
       this.maxLength,
       this.inputFormatters})
       : controller = controller ??
-            TextEditingController(text: _toString<T>(initialValue, itemParser)),
+            TextEditingController(
+                text: _toString<T>(initialValue, itemToString)),
         focusNode = focusNode ?? FocusNode(),
-        containerBuilder = containerBuilder ??
-            ((context, items) => Container(
-                  height: 200.0,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: items,
-                    ),
-                  ),
-                )),
+        suggestionsBuilder =
+            suggestionsBuilder ?? _defaultSuggestionsBuilder(suggestionsHeight),
         super(
             key: key,
             autovalidate: autovalidate,
@@ -177,10 +174,10 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
     }
   }
 
-  T get _value => _toString<T>(tappedSuggestion, parent.itemParser) ==
+  T get _value => _toString<T>(tappedSuggestion, parent.itemToString) ==
           parent.controller.text
       ? tappedSuggestion
-      : _toObject<T>(parent.controller.text, parent.itemParser);
+      : _toObject<T>(parent.controller.text, parent.itemFromString);
 
   @override
   void setValue(T value) {
@@ -238,7 +235,7 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
               future: _buildSuggestions(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  return parent.containerBuilder(context, snapshot.data);
+                  return parent.suggestionsBuilder(context, snapshot.data);
                 } else if (snapshot.hasError) {
                   return new Text('${snapshot.error}');
                 }
@@ -259,7 +256,7 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
               onTap: () {
                 tappedSuggestion = suggestion;
                 parent.controller.text =
-                    _toString<T>(suggestion, parent.itemParser);
+                    _toString<T>(suggestion, parent.itemToString);
                 parent.focusNode.unfocus();
               },
             )));
@@ -267,8 +264,16 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
   }
 }
 
-String _toString<T>(T value, ItemParser<T> parser) =>
-    parser?.itemToString(value) ?? value?.toString() ?? '';
+String _toString<T>(T value, ItemToString<T> fn) =>
+    (fn == null ? value?.toString() : fn(value)) ?? '';
 
-T _toObject<T>(String string, ItemParser<T> parser) =>
-    parser?.itemFromString(string) ?? null;
+T _toObject<T>(String s, ItemFromString fn) => fn == null ? null : fn(s);
+
+SuggestionsBuilder _defaultSuggestionsBuilder(double height) =>
+    // ((context, items) => ListView(children: items));
+    ((context, items) => Container(
+        height: height,
+        child: SingleChildScrollView(
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: items))));
