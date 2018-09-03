@@ -42,13 +42,18 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
               onSearch: (search) async => people
                   .where((person) =>
-                      person.name.contains(search) ||
-                      person.address.contains(search))
+                      person.name
+                          .toLowerCase()
+                          .contains(search.toLowerCase()) ||
+                      person.address
+                          .toLowerCase()
+                          .contains(search.toLowerCase()))
                   .toList(),
               itemFromString: (string) => people.singleWhere(
-                  (person) => person.name == string,
+                  (person) => person.name.toLowerCase() == string.toLowerCase(),
                   orElse: () => null),
               onChanged: (value) => setState(() => selectedPerson = value),
+              onSaved: (value) => setState(() => selectedPerson = value),
               validator: (person) => person == null ? 'Invalid person.' : null,
             ),
             SizedBox(height: 16.0),
@@ -63,27 +68,28 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
               onSearch: (String search) async => search.isEmpty
                   ? letters
-                  : letters.where((letter) => search.contains(letter)).toList(),
-
+                  : letters
+                      .where((letter) => search.toLowerCase().contains(letter))
+                      .toList(),
               itemFromString: (string) => letters.singleWhere(
-                  (letter) => letter == string,
+                  (letter) => letter == string.toLowerCase(),
                   orElse: () => null),
-              onChanged: (value) {
-                setState(() => selectedLetter = value);
-              },
+              onChanged: (value) => setState(() => selectedLetter = value),
+              onSaved: (value) => setState(() => selectedLetter = value),
               validator: (letter) => letter == null ? 'Invalid letter.' : null,
             ),
             SizedBox(height: 16.0),
             RaisedButton(
                 child: Text('Submit'),
                 onPressed: () {
-                  if (!formKey.currentState.validate()) {
+                  if (formKey.currentState.validate()) {
+                    formKey.currentState.save();
+                    scaffoldKey.currentState
+                        .showSnackBar(SnackBar(content: Text('Fields valid!')));
+                  } else {
                     scaffoldKey.currentState.showSnackBar(
                         SnackBar(content: Text('Fix errors to continue.')));
                     setState(() => autovalidate = true);
-                  } else {
-                    scaffoldKey.currentState
-                        .showSnackBar(SnackBar(content: Text('Fields valid!')));
                   }
                 })
           ]),

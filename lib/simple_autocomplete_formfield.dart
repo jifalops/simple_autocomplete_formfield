@@ -199,6 +199,7 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
                         icon: Icon(parent.resetIcon),
                         onPressed: () {
                           parent.controller.clear();
+                          // parent.focusNode.unfocus();
                         },
                       )
                     : Container(width: 0.0, height: 0.0),
