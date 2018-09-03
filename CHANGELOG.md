@@ -1,8 +1,8 @@
-## [0.2.1] - September 3, 2018
+## [0.2.2] - September 3, 2018
 
 * Add .gif of example to README.
 
-## [0.2.0] - September 2, 2018
+## [0.2.0] - September 3, 2018
 
 * **Breaking**: removed `itemParser` and added its `itemToString` and `itemFromString` as direct parameters.
 * **Breaking**: `containerBuilder` has been renamed to `suggestionsBuilder`.
