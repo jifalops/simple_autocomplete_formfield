@@ -1,4 +1,4 @@
-## [0.2.2] - September 3, 2018
+## [0.2.3] - September 3, 2018
 
 * Add .gif of example to README.
 
