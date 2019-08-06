@@ -1,3 +1,7 @@
+## [0.2.4] - August 6, 2019
+
+* Fix #6
+
 ## [0.2.3] - September 3, 2018
 
 * Add .gif of example to README.

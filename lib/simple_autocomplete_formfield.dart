@@ -197,10 +197,7 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
                 suffixIcon: showResetIcon
                     ? IconButton(
                         icon: Icon(parent.resetIcon),
-                        onPressed: () {
-                          parent.controller.clear();
-                          // parent.focusNode.unfocus();
-                        },
+                        onPressed: clear,
                       )
                     : Container(width: 0.0, height: 0.0),
               ),
@@ -262,6 +259,20 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
               },
             )));
     return list;
+  }
+
+  void _hideKeyboard() {
+    Future.microtask(() => FocusScope.of(context).requestFocus(FocusNode()));
+  }
+
+  void clear() async {
+    _hideKeyboard();
+    // Fix for ripple effect throwing exception
+    // and the field staying gray.
+    // https://github.com/flutter/flutter/issues/36324
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() => parent.controller.clear());
+    });
   }
 }
 
