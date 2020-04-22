@@ -1,3 +1,7 @@
+## [0.2.5] - April 21, 2020
+
+* Fix holding reference to widget.
+
 ## [0.2.4] - August 6, 2019
 
 * Fix #6

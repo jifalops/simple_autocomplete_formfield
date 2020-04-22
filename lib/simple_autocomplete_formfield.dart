@@ -132,17 +132,15 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
 
   @override
   _SimpleAutocompleteFormFieldState<T> createState() =>
-      _SimpleAutocompleteFormFieldState<T>(this);
+      _SimpleAutocompleteFormFieldState<T>();
 }
 
 class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
-  final SimpleAutocompleteFormField<T> parent;
+  SimpleAutocompleteFormField<T> get parent => widget;
   List<T> suggestions;
   bool showSuggestions = false;
   bool showResetIcon = false;
   T tappedSuggestion;
-
-  _SimpleAutocompleteFormFieldState(this.parent);
 
   @override
   void initState() {
