@@ -1,3 +1,7 @@
+## [0.2.6] - April 24, 2020
+
+* Let `textfield_state` handle controller/focusNode changes.
+
 ## [0.2.5] - April 21, 2020
 
 * Fix holding reference to widget.
