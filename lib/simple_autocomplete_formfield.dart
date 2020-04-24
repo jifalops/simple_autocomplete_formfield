@@ -102,7 +102,7 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
 
       // TextFormField properties
       TextEditingController controller,
-      FocusNode focusNode,
+      this.focusNode,
       this.initialValue,
       this.decoration: const InputDecoration(),
       this.keyboardType: TextInputType.text,
@@ -119,7 +119,6 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
       : controller = controller ??
             TextEditingController(
                 text: _toString<T>(initialValue, itemToString)),
-        focusNode = focusNode ?? FocusNode(),
         suggestionsBuilder =
             suggestionsBuilder ?? _defaultSuggestionsBuilder(suggestionsHeight),
         super(
