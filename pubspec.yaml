@@ -6,6 +6,7 @@ homepage: https://github.com/jifalops/simple_autocomplete_formfield
 dependencies:
   flutter:
     sdk: flutter
+  textfield_state: ^0.2.0
 
 dev_dependencies:
   flutter_test:
