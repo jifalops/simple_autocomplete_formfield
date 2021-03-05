@@ -75,7 +75,7 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
   final TextInputType? keyboardType;
   final TextStyle? style;
   final TextAlign textAlign;
-  final T initialValue;
+  final T? initialValue;
   final bool autofocus;
   final bool obscureText;
   final bool autocorrect;
@@ -108,7 +108,7 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
       // TextFormField properties
       TextEditingController? controller,
       this.focusNode,
-      required this.initialValue,
+      this.initialValue,
       this.decoration: const InputDecoration(),
       this.keyboardType: TextInputType.text,
       this.style,
@@ -195,10 +195,9 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
     super.dispose();
   }
 
-  T? get _value =>
-      (tappedSuggestion != null && _toString(tappedSuggestion!, widget.itemToString) == state.controller.text)
-          ? tappedSuggestion
-          : _toObject<T>(state.controller.text, widget.itemFromString);
+  T? get _value => _toString(tappedSuggestion, widget.itemToString) == state.controller.text
+      ? tappedSuggestion
+      : _toObject<T>(state.controller.text, widget.itemFromString);
 
   @override
   void setValue(T? value) {
@@ -275,7 +274,7 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
           child: widget.itemBuilder(context, suggestion),
           onTap: () {
             tappedSuggestion = suggestion;
-            state.controller.text = suggestion == null ? '' : _toString<T>(suggestion, widget.itemToString);
+            state.controller.text = _toString<T>(suggestion, widget.itemToString);
             state.focusNode.unfocus();
           },
         )));
@@ -297,9 +296,9 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
   }
 }
 
-String _toString<T>(T value, ItemToString<T>? fn) => (fn == null ? value?.toString() : fn(value)) ?? '';
+String _toString<T>(T? value, ItemToString<T?>? fn) => (fn == null ? value?.toString() : fn(value)) ?? '';
 
-T? _toObject<T>(String s, ItemFromString? fn) => fn == null ? null : fn(s);
+T? _toObject<T>(String? s, ItemFromString<T?>? fn) => fn == null ? null : fn(s ?? '');
 
 SuggestionsBuilder _defaultSuggestionsBuilder(double? height) =>
     // ((context, items) => ListView(children: items));
