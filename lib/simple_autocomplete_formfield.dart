@@ -80,6 +80,8 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
   final bool maxLengthEnforced;
   final int maxLines;
   final int maxLength;
+  final EdgeInsets scrollPadding;
+  final TextCapitalization textCapitalization;
   final List<TextInputFormatter> inputFormatters;
   final bool enabled;
 
@@ -115,6 +117,8 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
       this.enabled,
       this.maxLines: 1,
       this.maxLength,
+      this.scrollPadding = const EdgeInsets.all(20.0),
+      this.textCapitalization = TextCapitalization.none,
       this.inputFormatters})
       : controller = controller ??
             TextEditingController(
@@ -235,6 +239,8 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
         maxLengthEnforced: widget.maxLengthEnforced,
         maxLines: widget.maxLines,
         maxLength: widget.maxLength,
+        scrollPadding: widget.scrollPadding,
+        textCapitalization: widget.textCapitalization,
         inputFormatters: widget.inputFormatters,
         enabled: widget.enabled,
         onFieldSubmitted: (value) {
