@@ -67,6 +67,7 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
   final FormFieldValidator<T> validator;
   final FormFieldSetter<T> onSaved;
   final ValueChanged<T> onFieldSubmitted;
+  final GestureTapCallback onTap;
   final TextEditingController controller;
   final FocusNode focusNode;
   final InputDecoration decoration;
@@ -100,6 +101,7 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
       bool autovalidate: false,
       this.validator,
       this.onFieldSubmitted,
+      this.onTap,
       this.onSaved,
 
       // TextFormField properties
@@ -253,6 +255,7 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
             return widget.validator(_value);
           }
         },
+        onTap: widget.onTap,
         onSaved: (value) {
           if (widget.onSaved != null) {
             return widget.onSaved(_value);
