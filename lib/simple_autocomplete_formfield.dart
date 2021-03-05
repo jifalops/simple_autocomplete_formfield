@@ -3,11 +3,12 @@ library simple_autocomplete_formfield;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show TextInputFormatter;
+import 'package:flutter/services.dart';
 import 'package:textfield_state/textfield_state.dart';
 
 typedef Widget SuggestionsBuilder(BuildContext context, List<Widget> items);
 typedef String ItemToString<T>(T item);
-typedef T ItemFromString<T>(String string);
+typedef T? ItemFromString<T>(String string);
 
 /// Wraps a [TextFormField] and shows a list of suggestions below it.
 ///
@@ -25,7 +26,7 @@ typedef T ItemFromString<T>(String string);
 /// container such as a [SingleChildScrollView]. This prevents the suggestions
 /// from overflowing other UI elements like the keyboard.
 class SimpleAutocompleteFormField<T> extends FormField<T> {
-  final Key key;
+  final Key? key;
 
   /// Minimum search length that shows suggestions.
   final int minSearchLength;
@@ -39,75 +40,75 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
 
   /// The height of the suggestions container. Has no effect if a custom
   ///  [suggestionsBuilder] is specified.
-  final double suggestionsHeight;
+  final double? suggestionsHeight;
 
   /// Represents an autocomplete suggestion.
-  final Widget Function(BuildContext context, T item) itemBuilder;
+  final Widget Function(BuildContext context, T? item) itemBuilder;
 
   /// How the text field is filled in when an item is selected. If omitted, the
   /// item's `toString()` method is used.
-  final ItemToString<T> itemToString;
+  final ItemToString<T?>? itemToString;
 
   /// Called before `onChanged` when the input loses focus and a suggestion was
   /// not selected, for example if the user typed in an entire suggestion value
   /// without tapping on it. The default implementation simply returns `null`.
-  final ItemFromString<T> itemFromString;
+  final ItemFromString<T?>? itemFromString;
 
   /// Called to fill the autocomplete list's data.
-  final Future<List<T>> Function(String search) onSearch;
+  final Future<List<T?>> Function(String search) onSearch;
 
   /// Called when an item is tapped or the field loses focus.
-  final ValueChanged<T> onChanged;
+  final ValueChanged<T?>? onChanged;
 
   /// If not null, the TextField [decoration]'s suffixIcon will be
   /// overridden to reset the input using the icon defined here.
-  final IconData resetIcon;
+  final IconData? resetIcon;
 
   // TextFormField properties
-  final FormFieldValidator<T> validator;
-  final FormFieldSetter<T> onSaved;
-  final ValueChanged<T> onFieldSubmitted;
-  final GestureTapCallback onTap;
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final InputDecoration decoration;
-  final TextInputType keyboardType;
-  final TextStyle style;
+  final FormFieldValidator<T?>? validator;
+  final FormFieldSetter<T?>? onSaved;
+  final ValueChanged<T?>? onFieldSubmitted;
+  final GestureTapCallback? onTap;
+  final TextEditingController? controller;
+  final FocusNode? focusNode;
+  final InputDecoration? decoration;
+  final TextInputType? keyboardType;
+  final TextStyle? style;
   final TextAlign textAlign;
   final T initialValue;
   final bool autofocus;
   final bool obscureText;
   final bool autocorrect;
-  final bool maxLengthEnforced;
-  final int maxLines;
-  final int maxLength;
+  final MaxLengthEnforcement maxLengthEnforcement;
+  final int? maxLines;
+  final int? maxLength;
   final EdgeInsets scrollPadding;
   final TextCapitalization textCapitalization;
-  final List<TextInputFormatter> inputFormatters;
+  final List<TextInputFormatter>? inputFormatters;
   final bool enabled;
 
   SimpleAutocompleteFormField(
       {this.key,
       this.minSearchLength: 0,
       this.maxSuggestions: 3,
-      @required this.itemBuilder,
-      @required this.onSearch,
-      SuggestionsBuilder suggestionsBuilder,
+      required this.itemBuilder,
+      required this.onSearch,
+      SuggestionsBuilder? suggestionsBuilder,
       this.suggestionsHeight,
       this.itemToString,
       this.itemFromString,
       this.onChanged,
       this.resetIcon: Icons.close,
-      bool autovalidate: false,
+      AutovalidateMode autovalidateMode: AutovalidateMode.disabled,
       this.validator,
       this.onFieldSubmitted,
       this.onTap,
       this.onSaved,
 
       // TextFormField properties
-      TextEditingController controller,
+      TextEditingController? controller,
       this.focusNode,
-      this.initialValue,
+      required this.initialValue,
       this.decoration: const InputDecoration(),
       this.keyboardType: TextInputType.text,
       this.style,
@@ -115,48 +116,42 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
       this.autofocus: false,
       this.obscureText: false,
       this.autocorrect: true,
-      this.maxLengthEnforced: true,
-      this.enabled,
+      this.maxLengthEnforcement: MaxLengthEnforcement.enforced,
+      this.enabled = true,
       this.maxLines: 1,
       this.maxLength,
       this.scrollPadding = const EdgeInsets.all(20.0),
       this.textCapitalization = TextCapitalization.none,
       this.inputFormatters})
-      : controller = controller ??
-            TextEditingController(
-                text: _toString<T>(initialValue, itemToString)),
-        suggestionsBuilder =
-            suggestionsBuilder ?? _defaultSuggestionsBuilder(suggestionsHeight),
+      : controller = controller ?? TextEditingController(text: _toString<T>(initialValue, itemToString)),
+        suggestionsBuilder = suggestionsBuilder ?? _defaultSuggestionsBuilder(suggestionsHeight),
         super(
             key: key,
-            autovalidate: autovalidate,
+            autovalidateMode: autovalidateMode,
             validator: validator,
             onSaved: onSaved,
             builder: (FormFieldState<T> field) {
-              // final _SimpleAutocompleteTextFieldState<T> state = field;
+              final state = field as _SimpleAutocompleteFormFieldState<T>;
+              return state.build(state.context);
             });
 
   @override
-  _SimpleAutocompleteFormFieldState<T> createState() =>
-      _SimpleAutocompleteFormFieldState<T>();
+  _SimpleAutocompleteFormFieldState<T> createState() => _SimpleAutocompleteFormFieldState<T>();
 }
 
 class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
   @override
-  SimpleAutocompleteFormField<T> get widget => super.widget;
-  List<T> suggestions;
+  SimpleAutocompleteFormField<T> get widget => super.widget as SimpleAutocompleteFormField<T>;
+  List<T> suggestions = [];
   bool showSuggestions = false;
   bool showResetIcon = false;
-  T tappedSuggestion;
-  TextFieldState state;
+  T? tappedSuggestion;
+  late final TextFieldState state;
 
   bool get hasFocus => state.focusNode.hasFocus;
   bool get hasText => state.controller.text.isNotEmpty;
 
-  String get initialText =>
-      widget.itemToString?.call(widget.initialValue) ??
-      widget.initialValue?.toString() ??
-      '';
+  String get initialText => widget.itemToString?.call(widget.initialValue) ?? widget.initialValue?.toString() ?? '';
 
   void textChanged(String text) {
     focusChanged(state.focusNode.hasFocus);
@@ -165,10 +160,8 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
   void focusChanged(bool focused) {
     if (focused) {
       setState(() {
-        showSuggestions =
-            state.controller.text.trim().length >= widget.minSearchLength;
-        if (widget.resetIcon != null &&
-            state.controller.text.trim().isEmpty == showResetIcon) {
+        showSuggestions = state.controller.text.trim().length >= widget.minSearchLength;
+        if (widget.resetIcon != null && state.controller.text.trim().isEmpty == showResetIcon) {
           showResetIcon = !showResetIcon;
         }
       });
@@ -192,10 +185,7 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
 
   @override
   void didUpdateWidget(FormField<T> oldWidget) {
-    state.update(
-        controller: widget.controller,
-        focusNode: widget.focusNode,
-        text: initialText);
+    state.update(controller: widget.controller, focusNode: widget.focusNode, text: initialText);
     super.didUpdateWidget(oldWidget);
   }
 
@@ -205,15 +195,15 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
     super.dispose();
   }
 
-  T get _value => _toString<T>(tappedSuggestion, widget.itemToString) ==
-          state.controller.text
-      ? tappedSuggestion
-      : _toObject<T>(state.controller.text, widget.itemFromString);
+  T? get _value =>
+      (tappedSuggestion != null && _toString(tappedSuggestion!, widget.itemToString) == state.controller.text)
+          ? tappedSuggestion
+          : _toObject<T>(state.controller.text, widget.itemFromString);
 
   @override
-  void setValue(T value) {
+  void setValue(T? value) {
     super.setValue(value);
-    if (widget.onChanged != null) widget.onChanged(value);
+    if (widget.onChanged != null) widget.onChanged?.call(value);
   }
 
   @override
@@ -224,7 +214,7 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
         focusNode: state.focusNode,
         decoration: widget.resetIcon == null
             ? widget.decoration
-            : widget.decoration.copyWith(
+            : widget.decoration?.copyWith(
                 suffixIcon: showResetIcon
                     ? IconButton(
                         icon: Icon(widget.resetIcon),
@@ -238,7 +228,7 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
         autofocus: widget.autofocus,
         obscureText: widget.obscureText,
         autocorrect: widget.autocorrect,
-        maxLengthEnforced: widget.maxLengthEnforced,
+        maxLengthEnforcement: widget.maxLengthEnforcement,
         maxLines: widget.maxLines,
         maxLength: widget.maxLength,
         scrollPadding: widget.scrollPadding,
@@ -247,18 +237,18 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
         enabled: widget.enabled,
         onFieldSubmitted: (value) {
           if (widget.onFieldSubmitted != null) {
-            return widget.onFieldSubmitted(_value);
+            return widget.onFieldSubmitted!(_value);
           }
         },
         validator: (value) {
           if (widget.validator != null) {
-            return widget.validator(_value);
+            return widget.validator!(_value);
           }
         },
         onTap: widget.onTap,
         onSaved: (value) {
           if (widget.onSaved != null) {
-            return widget.onSaved(_value);
+            return widget.onSaved!(_value);
           }
         },
       ),
@@ -267,7 +257,7 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
               future: _buildSuggestions(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  return widget.suggestionsBuilder(context, snapshot.data);
+                  return widget.suggestionsBuilder(context, snapshot.data!);
                 } else if (snapshot.hasError) {
                   return new Text('${snapshot.error}');
                 }
@@ -279,19 +269,16 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
   }
 
   Future<List<Widget>> _buildSuggestions() async {
-    final list = List<Widget>();
+    final list = <Widget>[];
     final suggestions = await widget.onSearch(state.controller.text);
-    suggestions
-        ?.take(widget.maxSuggestions)
-        ?.forEach((suggestion) => list.add(InkWell(
-              child: widget.itemBuilder(context, suggestion),
-              onTap: () {
-                tappedSuggestion = suggestion;
-                state.controller.text =
-                    _toString<T>(suggestion, widget.itemToString);
-                state.focusNode.unfocus();
-              },
-            )));
+    suggestions.take(widget.maxSuggestions).forEach((suggestion) => list.add(InkWell(
+          child: widget.itemBuilder(context, suggestion),
+          onTap: () {
+            tappedSuggestion = suggestion;
+            state.controller.text = suggestion == null ? '' : _toString<T>(suggestion, widget.itemToString);
+            state.focusNode.unfocus();
+          },
+        )));
     return list;
   }
 
@@ -304,22 +291,18 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
     // Fix for ripple effect throwing exception
     // and the field staying gray.
     // https://github.com/flutter/flutter/issues/36324
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
       setState(() => state.controller.clear());
     });
   }
 }
 
-String _toString<T>(T value, ItemToString<T> fn) =>
-    (fn == null ? value?.toString() : fn(value)) ?? '';
+String _toString<T>(T value, ItemToString<T>? fn) => (fn == null ? value?.toString() : fn(value)) ?? '';
 
-T _toObject<T>(String s, ItemFromString fn) => fn == null ? null : fn(s);
+T? _toObject<T>(String s, ItemFromString? fn) => fn == null ? null : fn(s);
 
-SuggestionsBuilder _defaultSuggestionsBuilder(double height) =>
+SuggestionsBuilder _defaultSuggestionsBuilder(double? height) =>
     // ((context, items) => ListView(children: items));
     ((context, items) => Container(
         height: height,
-        child: SingleChildScrollView(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: items))));
+        child: SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: items))));
