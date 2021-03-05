@@ -1,3 +1,7 @@
+## [0.3.0]
+
+- Support null safety
+
 ## [0.2.7] - April 24, 2020
 
 * Fix constructing a FocusNode on each widget build.
