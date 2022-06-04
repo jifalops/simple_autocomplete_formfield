@@ -2,13 +2,12 @@ library simple_autocomplete_formfield;
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show TextInputFormatter;
 import 'package:flutter/services.dart';
 import 'package:textfield_state/textfield_state.dart';
 
-typedef Widget SuggestionsBuilder(BuildContext context, List<Widget> items);
-typedef String ItemToString<T>(T item);
-typedef T? ItemFromString<T>(String string);
+typedef SuggestionsBuilder = Widget Function(BuildContext context, List<Widget> items);
+typedef ItemToString<T> = String Function(T item);
+typedef ItemFromString<T> = T? Function(String string);
 
 /// Wraps a [TextFormField] and shows a list of suggestions below it.
 ///
@@ -26,8 +25,6 @@ typedef T? ItemFromString<T>(String string);
 /// container such as a [SingleChildScrollView]. This prevents the suggestions
 /// from overflowing other UI elements like the keyboard.
 class SimpleAutocompleteFormField<T> extends FormField<T> {
-  final Key? key;
-
   /// Minimum search length that shows suggestions.
   final int minSearchLength;
 
@@ -65,8 +62,6 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
   final IconData? resetIcon;
 
   // TextFormField properties
-  final FormFieldValidator<T?>? validator;
-  final FormFieldSetter<T?>? onSaved;
   final ValueChanged<T?>? onFieldSubmitted;
   final GestureTapCallback? onTap;
   final TextEditingController? controller;
@@ -75,7 +70,6 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
   final TextInputType? keyboardType;
   final TextStyle? style;
   final TextAlign textAlign;
-  final T? initialValue;
   final bool autofocus;
   final bool obscureText;
   final bool autocorrect;
@@ -85,61 +79,57 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
   final EdgeInsets scrollPadding;
   final TextCapitalization textCapitalization;
   final List<TextInputFormatter>? inputFormatters;
-  final bool enabled;
 
-  SimpleAutocompleteFormField(
-      {this.key,
-      this.minSearchLength: 0,
-      this.maxSuggestions: 3,
-      required this.itemBuilder,
-      required this.onSearch,
-      SuggestionsBuilder? suggestionsBuilder,
-      this.suggestionsHeight,
-      this.itemToString,
-      this.itemFromString,
-      this.onChanged,
-      this.resetIcon: Icons.close,
-      AutovalidateMode autovalidateMode: AutovalidateMode.disabled,
-      this.validator,
-      this.onFieldSubmitted,
-      this.onTap,
-      this.onSaved,
+  SimpleAutocompleteFormField({
+    super.key,
+    this.minSearchLength = 0,
+    this.maxSuggestions = 3,
+    required this.itemBuilder,
+    required this.onSearch,
+    SuggestionsBuilder? suggestionsBuilder,
+    this.suggestionsHeight,
+    this.itemToString,
+    this.itemFromString,
+    this.onChanged,
+    this.resetIcon = Icons.close,
+    AutovalidateMode super.autovalidateMode = AutovalidateMode.disabled,
+    super.validator,
+    this.onFieldSubmitted,
+    this.onTap,
+    super.onSaved,
 
-      // TextFormField properties
-      TextEditingController? controller,
-      this.focusNode,
-      this.initialValue,
-      this.decoration: const InputDecoration(),
-      this.keyboardType: TextInputType.text,
-      this.style,
-      this.textAlign: TextAlign.start,
-      this.autofocus: false,
-      this.obscureText: false,
-      this.autocorrect: true,
-      this.maxLengthEnforcement: MaxLengthEnforcement.enforced,
-      this.enabled = true,
-      this.maxLines: 1,
-      this.maxLength,
-      this.scrollPadding = const EdgeInsets.all(20.0),
-      this.textCapitalization = TextCapitalization.none,
-      this.inputFormatters})
-      : controller = controller ?? TextEditingController(text: _toString<T>(initialValue, itemToString)),
+    // TextFormField properties
+    TextEditingController? controller,
+    this.focusNode,
+    super.initialValue,
+    this.decoration = const InputDecoration(),
+    this.keyboardType = TextInputType.text,
+    this.style,
+    this.textAlign = TextAlign.start,
+    this.autofocus = false,
+    this.obscureText = false,
+    this.autocorrect = true,
+    this.maxLengthEnforcement = MaxLengthEnforcement.enforced,
+    super.enabled = true,
+    this.maxLines = 1,
+    this.maxLength,
+    this.scrollPadding = const EdgeInsets.all(20.0),
+    this.textCapitalization = TextCapitalization.none,
+    this.inputFormatters,
+  })  : controller = controller ?? TextEditingController(text: _toString<T>(initialValue, itemToString)),
         suggestionsBuilder = suggestionsBuilder ?? _defaultSuggestionsBuilder(suggestionsHeight),
         super(
-            key: key,
-            autovalidateMode: autovalidateMode,
-            validator: validator,
-            onSaved: onSaved,
-            builder: (FormFieldState<T> field) {
-              final state = field as _SimpleAutocompleteFormFieldState<T>;
-              return state.build(state.context);
-            });
+          builder: (FormFieldState<T> field) {
+            var state = field;
+            return state.build(state.context);
+          },
+        );
 
   @override
-  _SimpleAutocompleteFormFieldState<T> createState() => _SimpleAutocompleteFormFieldState<T>();
+  SimpleAutocompleteFormFieldState<T> createState() => SimpleAutocompleteFormFieldState<T>();
 }
 
-class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
+class SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
   @override
   SimpleAutocompleteFormField<T> get widget => super.widget as SimpleAutocompleteFormField<T>;
   List<T> suggestions = [];
@@ -151,7 +141,8 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
   bool get hasFocus => state.focusNode.hasFocus;
   bool get hasText => state.controller.text.isNotEmpty;
 
-  String get initialText => widget.itemToString?.call(widget.initialValue) ?? widget.initialValue?.toString() ?? '';
+  String get initialText =>
+      widget.itemToString?.call(widget.initialValue) ?? widget.initialValue?.toString() ?? '';
 
   void textChanged(String text) {
     focusChanged(state.focusNode.hasFocus);
@@ -207,77 +198,84 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      TextFormField(
-        controller: state.controller,
-        focusNode: state.focusNode,
-        decoration: widget.resetIcon == null
-            ? widget.decoration
-            : widget.decoration?.copyWith(
-                suffixIcon: showResetIcon
-                    ? IconButton(
-                        icon: Icon(widget.resetIcon),
-                        onPressed: clear,
-                      )
-                    : Container(width: 0.0, height: 0.0),
-              ),
-        keyboardType: widget.keyboardType,
-        style: widget.style,
-        textAlign: widget.textAlign,
-        autofocus: widget.autofocus,
-        obscureText: widget.obscureText,
-        autocorrect: widget.autocorrect,
-        maxLengthEnforcement: widget.maxLengthEnforcement,
-        maxLines: widget.maxLines,
-        maxLength: widget.maxLength,
-        scrollPadding: widget.scrollPadding,
-        textCapitalization: widget.textCapitalization,
-        inputFormatters: widget.inputFormatters,
-        enabled: widget.enabled,
-        onFieldSubmitted: (value) {
-          if (widget.onFieldSubmitted != null) {
-            return widget.onFieldSubmitted!(_value);
-          }
-        },
-        validator: (value) {
-          if (widget.validator != null) {
-            return widget.validator!(_value);
-          }
-        },
-        onTap: widget.onTap,
-        onSaved: (value) {
-          if (widget.onSaved != null) {
-            return widget.onSaved!(_value);
-          }
-        },
-      ),
-      showSuggestions
-          ? FutureBuilder<List<Widget>>(
-              future: _buildSuggestions(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return widget.suggestionsBuilder(context, snapshot.data!);
-                } else if (snapshot.hasError) {
-                  return new Text('${snapshot.error}');
-                }
-                return Center(child: CircularProgressIndicator());
-              },
-            )
-          : Container(height: 0.0, width: 0.0),
-    ]);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextFormField(
+          controller: state.controller,
+          focusNode: state.focusNode,
+          decoration: widget.resetIcon == null
+              ? widget.decoration
+              : widget.decoration?.copyWith(
+                  suffixIcon: showResetIcon
+                      ? IconButton(
+                          icon: Icon(widget.resetIcon),
+                          onPressed: clear,
+                        )
+                      : null,
+                ),
+          keyboardType: widget.keyboardType,
+          style: widget.style,
+          textAlign: widget.textAlign,
+          autofocus: widget.autofocus,
+          obscureText: widget.obscureText,
+          autocorrect: widget.autocorrect,
+          maxLengthEnforcement: widget.maxLengthEnforcement,
+          maxLines: widget.maxLines,
+          maxLength: widget.maxLength,
+          scrollPadding: widget.scrollPadding,
+          textCapitalization: widget.textCapitalization,
+          inputFormatters: widget.inputFormatters,
+          enabled: widget.enabled,
+          onFieldSubmitted: (value) {
+            if (widget.onFieldSubmitted != null) {
+              return widget.onFieldSubmitted!(_value);
+            }
+          },
+          validator: (value) {
+            if (widget.validator != null) {
+              return widget.validator!(_value);
+            }
+            return null;
+          },
+          onTap: widget.onTap,
+          onSaved: (value) {
+            if (widget.onSaved != null) {
+              return widget.onSaved!(_value);
+            }
+          },
+        ),
+        if (showSuggestions)
+          FutureBuilder<List<Widget>>(
+            future: _buildSuggestions(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return widget.suggestionsBuilder(context, snapshot.data!);
+              } else if (snapshot.hasError) {
+                return Text('${snapshot.error}');
+              }
+              return const Center(child: CircularProgressIndicator());
+            },
+          )
+      ],
+    );
   }
 
   Future<List<Widget>> _buildSuggestions() async {
-    final list = <Widget>[];
-    final suggestions = await widget.onSearch(state.controller.text);
-    suggestions.take(widget.maxSuggestions).forEach((suggestion) => list.add(InkWell(
-          child: widget.itemBuilder(context, suggestion),
-          onTap: () {
-            tappedSuggestion = suggestion;
-            state.controller.text = _toString<T>(suggestion, widget.itemToString);
-            state.focusNode.unfocus();
-          },
-        )));
+    var list = <Widget>[];
+    var suggestions = await widget.onSearch(state.controller.text);
+    suggestions.take(widget.maxSuggestions).forEach(
+          (suggestion) => list.add(
+            InkWell(
+              child: widget.itemBuilder(context, suggestion),
+              onTap: () {
+                tappedSuggestion = suggestion;
+                state.controller.text = _toString<T>(suggestion, widget.itemToString);
+                state.focusNode.unfocus();
+              },
+            ),
+          ),
+        );
     return list;
   }
 
@@ -285,12 +283,12 @@ class _SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
     Future.microtask(() => FocusScope.of(context).requestFocus(FocusNode()));
   }
 
-  void clear() async {
+  Future<void> clear() async {
     _hideKeyboard();
     // Fix for ripple effect throwing exception
     // and the field staying gray.
     // https://github.com/flutter/flutter/issues/36324
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() => state.controller.clear());
     });
   }
@@ -300,8 +298,11 @@ String _toString<T>(T? value, ItemToString<T?>? fn) => (fn == null ? value?.toSt
 
 T? _toObject<T>(String? s, ItemFromString<T?>? fn) => fn == null ? null : fn(s ?? '');
 
-SuggestionsBuilder _defaultSuggestionsBuilder(double? height) =>
-    // ((context, items) => ListView(children: items));
-    ((context, items) => Container(
+SuggestionsBuilder _defaultSuggestionsBuilder(double? height) {
+  return (context, items) => SizedBox(
         height: height,
-        child: SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: items))));
+        child: SingleChildScrollView(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: items),
+        ),
+      );
+}
