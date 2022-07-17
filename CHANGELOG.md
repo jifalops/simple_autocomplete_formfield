@@ -1,6 +1,6 @@
 ## [0.3.1]
 
-- Update to flutter 3
+- Update to flutter 3 and latest gradle and kotlin versions
 - Remove warning of Operand of null-aware operation '!'
 - Improve example
 
