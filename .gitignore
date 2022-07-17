@@ -8,3 +8,6 @@ build/
 ios/.generated/
 ios/Flutter/Generated.xcconfig
 ios/Runner/GeneratedPluginRegistrant.*
+.idea/modules.xml
+.idea/workspace.xml
+.idea/libraries/Dart_SDK.xml
