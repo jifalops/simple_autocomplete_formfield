@@ -1,6 +1,6 @@
 name: efficient_autocomplete_formfield
 description: Improve TextFormFields with efficient autocomplete features.
-version: 0.3.1
+version: 0.3.2
 homepage: https://github.com/yurtemre7/efficient_autocomplete_formfield
 
 dependencies:
