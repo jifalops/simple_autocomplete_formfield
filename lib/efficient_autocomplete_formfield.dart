@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:textfield_state/textfield_state.dart';
 
-typedef SuggestionsBuilder = Widget Function(BuildContext context, List<Widget> items);
+typedef SuggestionsBuilder = Widget Function(
+    BuildContext context, List<Widget> items);
 typedef ItemToString<T> = String Function(T item);
 typedef ItemFromString<T> = T? Function(String string);
 
@@ -118,8 +119,11 @@ class EfficientAutocompleteFormField<T> extends FormField<T> {
     this.scrollPadding = const EdgeInsets.all(20.0),
     this.textCapitalization = TextCapitalization.none,
     this.inputFormatters,
-  })  : controller = controller ?? TextEditingController(text: _toString<T>(initialValue, itemToString)),
-        suggestionsBuilder = suggestionsBuilder ?? _defaultSuggestionsBuilder(suggestionsHeight),
+  })  : controller = controller ??
+            TextEditingController(
+                text: _toString<T>(initialValue, itemToString)),
+        suggestionsBuilder =
+            suggestionsBuilder ?? _defaultSuggestionsBuilder(suggestionsHeight),
         super(
           builder: (FormFieldState<T> field) {
             var state = field;
@@ -128,12 +132,14 @@ class EfficientAutocompleteFormField<T> extends FormField<T> {
         );
 
   @override
-  EfficientAutocompleteFormFieldState<T> createState() => EfficientAutocompleteFormFieldState<T>();
+  EfficientAutocompleteFormFieldState<T> createState() =>
+      EfficientAutocompleteFormFieldState<T>();
 }
 
 class EfficientAutocompleteFormFieldState<T> extends FormFieldState<T> {
   @override
-  EfficientAutocompleteFormField<T> get widget => super.widget as EfficientAutocompleteFormField<T>;
+  EfficientAutocompleteFormField<T> get widget =>
+      super.widget as EfficientAutocompleteFormField<T>;
   List<T> suggestions = [];
   bool showSuggestions = false;
   bool showResetIcon = false;
@@ -144,7 +150,9 @@ class EfficientAutocompleteFormFieldState<T> extends FormFieldState<T> {
   bool get hasText => state.controller.text.isNotEmpty;
 
   String get initialText =>
-      widget.itemToString?.call(widget.initialValue) ?? widget.initialValue?.toString() ?? '';
+      widget.itemToString?.call(widget.initialValue) ??
+      widget.initialValue?.toString() ??
+      '';
 
   void textChanged(String text) {
     focusChanged(state.focusNode.hasFocus);
@@ -153,8 +161,10 @@ class EfficientAutocompleteFormFieldState<T> extends FormFieldState<T> {
   void focusChanged(bool focused) {
     if (focused) {
       setState(() {
-        showSuggestions = state.controller.text.trim().length >= widget.minSearchLength;
-        if (widget.resetIcon != null && state.controller.text.trim().isEmpty == showResetIcon) {
+        showSuggestions =
+            state.controller.text.trim().length >= widget.minSearchLength;
+        if (widget.resetIcon != null &&
+            state.controller.text.trim().isEmpty == showResetIcon) {
           showResetIcon = !showResetIcon;
         }
       });
@@ -178,7 +188,10 @@ class EfficientAutocompleteFormFieldState<T> extends FormFieldState<T> {
 
   @override
   void didUpdateWidget(FormField<T> oldWidget) {
-    state.update(controller: widget.controller, focusNode: widget.focusNode, text: initialText);
+    state.update(
+        controller: widget.controller,
+        focusNode: widget.focusNode,
+        text: initialText);
     super.didUpdateWidget(oldWidget);
   }
 
@@ -188,9 +201,10 @@ class EfficientAutocompleteFormFieldState<T> extends FormFieldState<T> {
     super.dispose();
   }
 
-  T? get _value => _toString(tappedSuggestion, widget.itemToString) == state.controller.text
-      ? tappedSuggestion
-      : _toObject<T>(state.controller.text, widget.itemFromString);
+  T? get _value =>
+      _toString(tappedSuggestion, widget.itemToString) == state.controller.text
+          ? tappedSuggestion
+          : _toObject<T>(state.controller.text, widget.itemFromString);
 
   @override
   void setValue(T? value) {
@@ -272,7 +286,8 @@ class EfficientAutocompleteFormFieldState<T> extends FormFieldState<T> {
               child: widget.itemBuilder(context, suggestion),
               onTap: () {
                 tappedSuggestion = suggestion;
-                state.controller.text = _toString<T>(suggestion, widget.itemToString);
+                state.controller.text =
+                    _toString<T>(suggestion, widget.itemToString);
                 state.focusNode.unfocus();
               },
             ),
@@ -296,15 +311,18 @@ class EfficientAutocompleteFormFieldState<T> extends FormFieldState<T> {
   }
 }
 
-String _toString<T>(T? value, ItemToString<T?>? fn) => (fn == null ? value?.toString() : fn(value)) ?? '';
+String _toString<T>(T? value, ItemToString<T?>? fn) =>
+    (fn == null ? value?.toString() : fn(value)) ?? '';
 
-T? _toObject<T>(String? s, ItemFromString<T?>? fn) => fn == null ? null : fn(s ?? '');
+T? _toObject<T>(String? s, ItemFromString<T?>? fn) =>
+    fn == null ? null : fn(s ?? '');
 
 SuggestionsBuilder _defaultSuggestionsBuilder(double? height) {
   return (context, items) => SizedBox(
         height: height,
         child: SingleChildScrollView(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: items),
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch, children: items),
         ),
       );
 }
