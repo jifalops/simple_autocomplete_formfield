@@ -1,3 +1,7 @@
+## [0.3.2]
+
+- Format project
+
 ## [0.3.1]
 
 - Update to flutter 3 and latest gradle and kotlin versions
