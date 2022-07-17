@@ -1,4 +1,4 @@
-import 'package:efficient_autocomplete_formfield/simple_autocomplete_formfield.dart';
+import 'package:efficient_autocomplete_formfield/efficient_autocomplete_formfield.dart';
 import 'package:example/constants/data.dart';
 import 'package:example/models/person.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +31,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Text('Selected person: "$selectedPerson"'),
               Text('Selected letter: "$selectedLetter"'),
               SizedBox(height: 16.0),
-              SimpleAutocompleteFormField<Person>(
+              EfficientAutocompleteFormField<Person>(
                 decoration: InputDecoration(labelText: 'Person', border: OutlineInputBorder()),
                 suggestionsHeight: 80.0,
                 itemBuilder: (context, person) => Padding(
@@ -58,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 validator: (person) => person == null ? 'Invalid person.' : null,
               ),
               SizedBox(height: 16.0),
-              SimpleAutocompleteFormField<String>(
+              EfficientAutocompleteFormField<String>(
                 decoration: InputDecoration(labelText: 'Letter', border: OutlineInputBorder()),
                 // suggestionsHeight: 200.0,
                 maxSuggestions: 10,

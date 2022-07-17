@@ -1,7 +1,7 @@
 name: efficient_autocomplete_formfield
-description: A Flutter widget that wraps a TextFormField and assists with autocomplete functionality.
+description: Improve TextFormFields with efficient autocomplete features.
 version: 0.3.1
-homepage: https://github.com/jifalops/simple_autocomplete_formfield
+homepage: https://github.com/yurtemre7/simple_autocomplete_formfield
 
 dependencies:
   flutter:

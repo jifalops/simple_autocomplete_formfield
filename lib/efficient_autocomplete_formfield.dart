@@ -1,6 +1,6 @@
 // ignore_for_file: avoid_as
 
-library simple_autocomplete_formfield;
+library efficient_autocomplete_formfield;
 
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -23,10 +23,10 @@ typedef ItemFromString<T> = T? Function(String string);
 /// on it.
 ///
 /// It is also recommended that the Widget tree containing a
-/// SimpleAutocompleteFormField include a [ListView] or other scrolling
+/// EfficientAutocompleteFormField include a [ListView] or other scrolling
 /// container such as a [SingleChildScrollView]. This prevents the suggestions
 /// from overflowing other UI elements like the keyboard.
-class SimpleAutocompleteFormField<T> extends FormField<T> {
+class EfficientAutocompleteFormField<T> extends FormField<T> {
   /// Minimum search length that shows suggestions.
   final int minSearchLength;
 
@@ -82,7 +82,7 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
   final TextCapitalization textCapitalization;
   final List<TextInputFormatter>? inputFormatters;
 
-  SimpleAutocompleteFormField({
+  EfficientAutocompleteFormField({
     super.key,
     this.minSearchLength = 0,
     this.maxSuggestions = 3,
@@ -128,12 +128,12 @@ class SimpleAutocompleteFormField<T> extends FormField<T> {
         );
 
   @override
-  SimpleAutocompleteFormFieldState<T> createState() => SimpleAutocompleteFormFieldState<T>();
+  EfficientAutocompleteFormFieldState<T> createState() => EfficientAutocompleteFormFieldState<T>();
 }
 
-class SimpleAutocompleteFormFieldState<T> extends FormFieldState<T> {
+class EfficientAutocompleteFormFieldState<T> extends FormFieldState<T> {
   @override
-  SimpleAutocompleteFormField<T> get widget => super.widget as SimpleAutocompleteFormField<T>;
+  EfficientAutocompleteFormField<T> get widget => super.widget as EfficientAutocompleteFormField<T>;
   List<T> suggestions = [];
   bool showSuggestions = false;
   bool showResetIcon = false;
