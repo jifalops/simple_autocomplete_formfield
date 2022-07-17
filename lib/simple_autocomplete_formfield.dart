@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_as
+
 library simple_autocomplete_formfield;
 
 import 'dart:async';
