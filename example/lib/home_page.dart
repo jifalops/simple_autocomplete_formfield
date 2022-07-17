@@ -1,7 +1,7 @@
+import 'package:efficient_autocomplete_formfield/simple_autocomplete_formfield.dart';
 import 'package:example/constants/data.dart';
 import 'package:example/models/person.dart';
 import 'package:flutter/material.dart';
-import 'package:simple_autocomplete_formfield/simple_autocomplete_formfield.dart';
 
 class MyHomePage extends StatefulWidget {
   @override
